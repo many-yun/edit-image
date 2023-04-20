@@ -1,107 +1,163 @@
-const canvas = document.querySelectorAll('canvas');
-const canvasTop = document.getElementById('canvasTop');
-const canvasBottom = document.getElementById('canvasBottom');
-const canvasSubmit = document.getElementById('canvasSubmit');
-const lineWidthNum = document.getElementById('line-width-num');
+const canvas = document.querySelector('canvas');
 const lineWidth = document.getElementById('line-width');
+const lineWidthNum = document.getElementById('line-width-num');
 const color = document.getElementById('color');
-const ctxTop = canvasTop.getContext('2d');
-const ctxBottom = canvasBottom.getContext('2d');
-const ctxSubmit = canvasSubmit.getContext('2d');
-const modeBtn = document.getElementById('mode-btn');
+const ctx = canvas.getContext('2d');
+const brushBtn = document.getElementById('brush-btn');
+const paintBtn = document.getElementById('paint-btn');
 const destroyBtn = document.getElementById('destroy-btn');
 const eraseBtn = document.getElementById('eraser-btn');
 const colorOptions = Array.from(document.getElementsByClassName('color-option'));
 const fileInput = document.getElementById('file');
 const textInput = document.getElementById('text');
 const saveBtn = document.getElementById('save');
-const rotateLeft = document.getElementById('rotate-left');
-const rotateRight = document.getElementById('rotate-right');
+const cropBtn = document.getElementById('crop-btn');
+const fontBtn = document.querySelectorAll('#font-btn');
+const toolBtns = document.querySelectorAll('.tool-btn');
 
-canvas.forEach((can) => (can.width = 800));
-canvas.forEach((can) => (can.height = 800));
-canvasBottom.width = 800;
-canvasBottom.height = 800;
-ctxBottom.lineCap = 'round';
+canvas.width = 800;
+canvas.height = 800;
+ctx.lineCap = 'round';
 // ctx.translate(0.5, 0.5);
-ctxBottom.lineWidth = lineWidth.value;
+ctx.lineWidth = lineWidth.value;
 let isPainting = false;
 let isFilling = false;
-let imageWidth = 800;
-let imageHeight = 800;
+let imageWidth = 0;
+let imageHeight = 0;
+
+let cropMode = false;
+
+let startX = 0;
+let startY = 0;
+let sX = 0;
+let sY = 0;
+let eX = 0;
+let eY = 0;
 
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 800;
+ctx.font = '48px S-CoreDream-3Light';
 
 let degrees = 0;
 
 function onMove(e) {
-   if (isPainting && !isFilling) {
-      ctxBottom.lineTo(e.offsetX, e.offsetY);
-      ctxBottom.stroke();
+   if (isPainting && !isFilling && !cropMode) {
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
       return;
+   } else if (isPainting && cropMode) {
+      let nowX = e.offsetX;
+      let nowY = e.offsetY;
+      canvasDraw(nowX, nowY);
+      sX = nowX;
+      sY = nowY;
    }
-   ctxBottom.moveTo(e.offsetX, e.offsetY);
+   ctx.moveTo(e.offsetX, e.offsetY);
 }
 
-function onMouseDown() {
-   isPainting = true;
+function onBrushMode() {
+   ctx.beginPath();
+   ctx.strokeStyle = color.value;
+   isFilling = false;
+}
+function onPaintMode() {
+   ctx.beginPath();
+   ctx.fillStyle = color.value;
+   isFilling = true;
 }
 
-function cancelPainting() {
+function canvasDraw(cX, cY) {
+   ctx.strokeStyle = 'red';
+   ctx.fillStyle = 'white';
+   ctx.lineWidth = 2;
+   image ? ctx.drawImage(image, 0, 0, imageWidth, imageHeight) : ctx.drawImage(canvas, 0, 0, imageWidth, imageHeight);
+   ctx.strokeRect(startX, startY, cX - startX, cY - startY);
+}
+
+function onMouseDown(e) {
+   if (!cropMode) {
+      isPainting = true;
+   } else if (cropMode) {
+      startX = e.offsetX;
+      startY = e.offsetY;
+      sX = e.offsetX;
+      sY = e.offsetY;
+      isPainting = true;
+   }
+}
+
+function onMouseUp(e) {
+   if (!cropMode) {
+      isPainting = false;
+   } else {
+      isPainting = false;
+      eX = e.offsetX;
+      eY = e.offsetY;
+   }
+}
+
+function onMouseOut() {
    isPainting = false;
 }
 
 function onLineWidthChange(e) {
-   ctxBottom.beginPath();
-   ctxBottom.lineWidth = e.target.value;
+   ctx.beginPath();
+   ctx.lineWidth = e.target.value;
    lineWidthNum.innerText = e.target.value;
 }
 
 function onColorChange(e) {
-   ctxBottom.beginPath();
-   ctxBottom.strokeStyle = e.target.value;
-   ctxBottom.fillStyle = e.target.value;
+   ctx.beginPath();
+   ctx.strokeStyle = e.target.value;
+   ctx.fillStyle = e.target.value;
 }
 
 function onColorClick(e) {
-   ctxBottom.beginPath();
+   ctx.beginPath();
    const colorValue = e.target.dataset.color;
-   ctxBottom.strokeStyle = colorValue;
-   ctxBottom.fillStyle = colorValue;
+   ctx.strokeStyle = colorValue;
+   ctx.fillStyle = colorValue;
    color.value = colorValue;
 }
 
-function onModeClick() {
-   isFilling
-      ? ((isFilling = false), (modeBtn.innerHTML = '<i class="fa fa-solid fa-fill-drip"></i> 페인트 모드'))
-      : ((isFilling = true), (modeBtn.innerHTML = '<i class="fa fa-solid fa-paintbrush"></i> 브러쉬 모드'));
-}
-
 function onCanvasClick() {
-   if (isFilling) {
-      ctxBottom.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+   if (isFilling && !cropMode) {
+      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
    }
 }
 
-function onDestroyClick() {
-   ctxBottom.fillStyle = 'white';
-   ctxBottom.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+function onDestroyClick(e) {
+   image.remove();
+   ctx.fillStyle = 'white';
+   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+   canvas.style.left = `0`;
+   canvas.style.top = `0`;
    canvas.width = 800;
    canvas.height = 800;
+   ctx.strokeStyle = color.value;
+   ctx.fillStyle = color.value;
+   ctx.lineWidth = lineWidth.value;
+   toolBtns.forEach((toolBtn) => toolBtn.classList.remove('mode-on'));
+   toolBtns[0].classList += ' mode-on';
+   startX = 0;
+   startY = 0;
+   sX = 0;
+   sY = 0;
+   eX = 0;
+   eY = 0;
 }
 
 function onEreaserClick() {
-   ctxBottom.beginPath();
-   ctxBottom.strokeStyle = 'white';
+   ctx.beginPath();
+   ctx.strokeStyle = 'white';
    isFilling = false;
 }
 
 const image = new Image(); // === <img src='' />
 
 function onFileChange(e) {
-   canvas.forEach((can) => (can.style.left = `0`));
-   canvas.forEach((can) => (can.style.top = `0`));
+   canvas.style.left = `0`;
+   canvas.style.top = `0`;
    degrees = 0;
    const file = e.target.files[0];
    const url = URL.createObjectURL(file);
@@ -112,143 +168,109 @@ function onFileChange(e) {
       if (image.naturalWidth > image.naturalHeight && image.naturalWidth >= 800) {
          imageWidth = 800;
          imageHeight = changedHeight;
-         canvas.forEach((can) => (can.width = 800));
-         canvas.forEach((can) => (can.height = changedHeight));
-         ctxTop.drawImage(image, 0, 0, 800, changedHeight);
-         canvas.forEach((can) => (can.style.top = ` calc(400px - ${imageHeight / 2}px)`));
+         canvas.width = 800;
+         canvas.height = changedHeight;
+         ctx.drawImage(image, 0, 0, 800, changedHeight);
+         canvas.style.top = ` calc(400px - ${imageHeight / 2}px)`;
       } else if (image.naturalWidth < image.naturalHeight && image.naturalHeight >= 800) {
          imageWidth = changedWidth;
          imageHeight = 800;
-         canvas.forEach((can) => (can.width = changedWidth));
-         canvas.forEach((can) => (can.height = 800));
-         ctxTop.drawImage(image, 0, 0, changedWidth, 800);
-         canvas.forEach((can) => (can.style.left = ` calc(50% - ${imageWidth / 2}px)`));
+         canvas.width = changedWidth;
+         canvas.height = 800;
+         ctx.drawImage(image, 0, 0, changedWidth, 800);
+         canvas.style.left = ` calc(50% - ${imageWidth / 2}px)`;
       } else if (image.naturalWidth === 800 && image.naturalHeight === 800) {
          imageWidth = 800;
          imageHeight = 800;
-         canvas.forEach((can) => (can.width = 800));
-         canvas.forEach((can) => (can.height = 800));
-         ctxTop.drawImage(image, 0, 0, 800, 800);
+         canvas.width = 800;
+         canvas.height = 800;
+         ctx.drawImage(image, 0, 0, 800, 800);
       } else {
          imageWidth = image.naturalWidth;
          imageHeight = image.naturalHeight;
-         canvas.forEach((can) => (can.width = image.naturalWidth));
-         canvas.forEach((can) => (can.height = image.naturalHeight));
-         ctxTop.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
-         canvas.forEach((can) => (can.style.left = ` calc(50% - ${image.naturalWidth / 2}px)`));
-         canvas.forEach((can) => (can.style.top = ` calc(400px - ${image.naturalHeight / 2}px)`));
+         canvas.width = image.naturalWidth;
+         canvas.height = image.naturalHeight;
+         ctx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
+         canvas.style.left = `calc(50% - ${image.naturalWidth / 2}px)`;
+         canvas.style.top = `calc(400px - ${image.naturalHeight / 2}px)`;
       }
 
-      ctxBottom.strokeStyle = color.value;
-      ctxBottom.fillStyle = color.value;
-      ctxBottom.lineWidth = lineWidth.value;
+      ctx.strokeStyle = color.value;
+      ctx.fillStyle = color.value;
+      ctx.lineWidth = lineWidth.value;
       fileInput.value = null;
    };
 }
 
 function onDoubleClick(e) {
    if (textInput.value !== '') {
-      ctxBottom.save();
+      ctx.save();
       const text = textInput.value;
-      ctxBottom.lineWidth = 1;
-      ctxBottom.font = '48px serif';
-      ctxBottom.fillText(text, e.offsetX, e.offsetY);
-      ctxBottom.restore();
+      ctx.lineWidth = 1;
+      ctx.fillText(text, e.offsetX, e.offsetY);
+      ctx.restore();
       textInput.value = '';
    }
 }
 
 function onSaveClick() {
-   ctxSubmit.drawImage(canvasTop, 0, 0);
-   ctxSubmit.drawImage(canvasBottom, 0, 0);
-   const url = canvasSubmit.toDataURL();
+   const url = canvas.toDataURL();
    const a = document.createElement('a');
    a.href = url;
    a.download = 'myDrawing.png';
    a.click();
-   document.removeChild(a);
 }
 
-function onRotateLeft() {
-   ctxBottom.beginPath();
-   ctxTop.save();
-   degrees -= 90;
-   if (degrees <= -360) degrees = 0;
-   if (degrees === 0 || degrees % 180 === 0) {
-      canvas.forEach((can) => (can.width = imageWidth));
-      canvas.forEach((can) => (can.height = imageHeight));
-      ctxTop.translate(canvasTop.width / 2, canvasTop.height / 2);
-      ctxTop.rotate((degrees * Math.PI) / 180);
-      ctxTop.translate(-(canvasTop.width / 2), -(canvasTop.height / 2));
-      ctxTop.drawImage(image, 0, 0, imageWidth, imageHeight);
-      if (image.width > image.height) {
-         canvas.forEach((can) => (can.style.left = `calc(50% - ${imageWidth / 2}px)`));
-         canvas.forEach((can) => (can.style.top = `calc(400px - ${imageHeight / 2}px)`));
-      } else if (image.width < image.height) {
-         canvas.forEach((can) => (can.style.top = `calc(400px - ${imageHeight / 2}px)`));
-         canvas.forEach((can) => (can.style.left = `calc(50% - ${imageWidth / 2}px)`));
-      }
+function onImageCrop(e) {
+   if (!cropMode) {
+      cropMode = true;
+      canvas.className += 'on';
+      e.currentTarget.className += 'mode-on';
+      cropBtn.innerHTML = '<i class="fa fa-solid fa-crop"></i> 자르기 완료';
    } else {
-      canvas.forEach((can) => (can.width = imageHeight));
-      canvas.forEach((can) => (can.height = imageWidth));
-      ctxTop.translate(canvasTop.width / 2, canvasTop.height / 2);
-      ctxTop.rotate((degrees * Math.PI) / 180);
-      ctxTop.translate(-(canvasTop.height / 2), -(canvasTop.width / 2));
-      ctxTop.drawImage(image, 0, 0, imageWidth, imageHeight);
-      if (image.width > image.height) {
-         canvas.forEach((can) => (can.style.top = `calc(400px - ${imageWidth / 2}px)`));
-         canvas.forEach((can) => (can.style.left = `calc(50% - ${imageHeight / 2}px)`));
-      } else if (image.width < image.height) {
-         canvas.forEach((can) => (can.style.left = `calc(50% - ${imageHeight / 2}px)`));
-         canvas.forEach((can) => (can.style.top = `calc(400px - ${imageWidth / 2}px)`));
-      }
+      cropMode = false;
+      canvas.classList.remove('on');
+      e.currentTarget.classList.remove('mode-on');
+      cropBtn.innerHTML = '<i class="fa fa-solid fa-crop"></i> 자르기';
+      let imageData = ctx.getImageData(startX + 1, startY + 1, eX, eY);
+      canvas.width = eX - startX - 2;
+      canvas.height = eY - startY - 2;
+      canvas.style.left = `calc(50% - ${canvas.width / 2}px)`;
+      canvas.style.top = `calc(400px - ${canvas.height / 2}px)`;
+      ctx.putImageData(imageData, 0, 0);
+      ctx.strokeStyle = color.value;
+      ctx.fillStyle = color.value;
+      ctx.lineWidth = lineWidth.value;
    }
-   // ctxTop.translate(-800, -800);
-   ctxBottom.strokeStyle = color.value;
-   ctxBottom.fillStyle = color.value;
-   ctxBottom.lineWidth = lineWidth.value;
-   ctxTop.restore();
 }
 
-function onRotateRight() {
-   ctxBottom.beginPath();
-   ctxTop.save();
-   degrees += 90;
-   if (degrees >= 360) degrees = 0;
-   if (degrees === 0 || degrees % 180 === 0) {
-      canvas.forEach((can) => (can.width = imageWidth));
-      canvas.forEach((can) => (can.height = imageHeight));
-      ctxTop.translate(canvasTop.width / 2, canvasTop.height / 2);
-      ctxTop.rotate((degrees * Math.PI) / 180);
-      ctxTop.translate(-(canvasTop.width / 2), -(canvasTop.height / 2));
-      ctxTop.drawImage(image, 0, 0, imageWidth, imageHeight);
-   } else {
-      canvas.forEach((can) => (can.width = imageHeight));
-      canvas.forEach((can) => (can.height = imageWidth));
-      ctxTop.translate(canvasTop.width / 2, canvasTop.height / 2);
-      ctxTop.rotate((degrees * Math.PI) / 180);
-      ctxTop.translate(-(canvasTop.height / 2), -(canvasTop.width / 2));
-      ctxTop.drawImage(image, 0, 0, imageWidth, imageHeight);
-   }
-   ctxBottom.strokeStyle = color.value;
-   ctxBottom.fillStyle = color.value;
-   ctxBottom.lineWidth = lineWidth.value;
-   ctxTop.restore();
+function onChangeFont(e) {
+   fontBtn.forEach((font) => (font.style.backgroundColor = '#efefef'));
+   fontBtn.forEach((font) => (font.style.color = '#333'));
+   ctx.font = `48px ${e.target.dataset.font}`;
+   e.target.style.backgroundColor = 'royalblue';
+   e.target.style.color = 'white';
 }
 
-canvasBottom.addEventListener('mousemove', onMove);
-canvasBottom.addEventListener('mousedown', onMouseDown);
-canvasBottom.addEventListener('mouseup', cancelPainting);
-canvasBottom.addEventListener('mouseleave', cancelPainting);
-canvasBottom.addEventListener('dblclick', onDoubleClick);
+function onToolMode(e) {
+   toolBtns.forEach((toolBtn) => toolBtn.classList.remove('mode-on'));
+   e.currentTarget.classList += ' mode-on';
+}
+
+canvas.addEventListener('mousemove', onMove);
+canvas.addEventListener('mousedown', onMouseDown);
+canvas.addEventListener('mouseup', onMouseUp);
+canvas.addEventListener('mouseleave', onMouseOut);
+canvas.addEventListener('dblclick', onDoubleClick);
 
 lineWidth.addEventListener('change', onLineWidthChange);
 color.addEventListener('change', onColorChange);
 
 colorOptions.forEach((color) => color.addEventListener('click', onColorClick));
 
-modeBtn.addEventListener('click', onModeClick);
-canvasBottom.addEventListener('click', onCanvasClick);
+brushBtn.addEventListener('click', onBrushMode);
+paintBtn.addEventListener('click', onPaintMode);
+canvas.addEventListener('click', onCanvasClick);
 
 destroyBtn.addEventListener('click', onDestroyClick);
 eraseBtn.addEventListener('click', onEreaserClick);
@@ -257,5 +279,8 @@ fileInput.addEventListener('change', onFileChange);
 
 saveBtn.addEventListener('click', onSaveClick);
 
-rotateLeft.addEventListener('click', onRotateLeft);
-rotateRight.addEventListener('click', onRotateRight);
+cropBtn.addEventListener('click', onImageCrop);
+
+fontBtn.forEach((font) => font.addEventListener('click', onChangeFont));
+
+toolBtns.forEach((toolBtn) => toolBtn.addEventListener('click', onToolMode));

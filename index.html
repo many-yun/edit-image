@@ -24,8 +24,8 @@
       </div>
       <div id="canvasWrapper">
          <canvas id="canvasTop"></canvas>
-         <canvas id="canvasBottom" style="background: none"></canvas>
-         <canvas style="display: none" id="canvasSubmit"></canvas>
+         <!-- <canvas id="canvasBottom" style="background: none"></canvas>
+         <canvas style="display: none" id="canvasSubmit"></canvas> -->
       </div>
       <div class="btns">
          <div class="brush-wrapper">
@@ -35,19 +35,32 @@
             </p>
             <input id="line-width" type="range" min="1" max="20" value="5" step="1" />
          </div>
-         <button id="mode-btn"><i class="fa fa-solid fa-fill-drip"></i> 페인트 모드</button>
-         <button id="destroy-btn"><i class="fa fa-solid fa-trash-can"></i> 초기화</button>
-         <button id="eraser-btn"><i class="fa fa-solid fa-eraser"></i> 지우개</button>
+         <div id="tool-btns">
+            <button class="tool-btn mode-on" id="brush-btn"><i class="fa fa-solid fa-paintbrush"></i></button>
+            <button class="tool-btn" id="paint-btn"><i class="fa fa-solid fa-fill-drip"></i></button>
+            <button class="tool-btn" id="eraser-btn"><i class="fa fa-solid fa-eraser"></i></button>
+            <button class="" id="destroy-btn"><i class="fa fa-solid fa-trash-can"></i></button>
+         </div>
+         <button id="crop-btn"><i class="fa fa-solid fa-crop"></i> 자르기</button>
          <!-- accept > 이미지 외 모든 파일 제외, multiple 속성 넣으면 여러 파일 업로드 가능 -->
          <label for="file">
             <i class="fa fa-solid fa-image"></i> 사진 추가
             <input type="file" accept="image/*" id="file" />
          </label>
-         <input type="text" placeholder="입력 후 캔버스 더블클릭!" id="text" autocomplete="off" />
-         <div class="rotate-btn">
+
+         <!-- <div class="rotate-btn">
             <button id="rotate-left"><i class="fas fa-solid fa-arrow-rotate-left"></i> 90°</button>
             <button id="rotate-right">90° <i class="fas fa-solid fa-arrow-rotate-right"></i></button>
+         </div> -->
+         <p><i class="fa-solid fa-circle" style="font-size: 3px"></i> 폰트</p>
+         <div id="fonts">
+            <button id="font-btn" data-font="S-CoreDream-3Light" style="background-color: royalblue; color: white">
+               가A
+            </button>
+            <button id="font-btn" data-font="KCC-Ganpan" style="font-family: 'KCC-Ganpan'">가A</button>
+            <button id="font-btn" data-font="SBAggroB" style="font-family: 'SBAggroB'">가A</button>
          </div>
+         <input type="text" placeholder="입력 후 캔버스 더블클릭!" id="text" autocomplete="off" />
          <button id="save"><i class="ㄻ fa-solid fa-download"></i> 이미지 저장</button>
       </div>
       <script src="app.js"></script>
