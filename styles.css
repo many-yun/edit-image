@@ -75,7 +75,7 @@ label {
    all: unset;
    padding: 15px 0;
    text-align: center;
-   background-color: rgb(121, 90, 207);
+   background-color: rgb(135, 84, 216);
    color: white;
    font-weight: 500;
    cursor: pointer;
@@ -83,7 +83,8 @@ label {
    transition: opacity linear 0.1s;
 }
 
-button:hover {
+button:hover,
+label:hover {
    opacity: 0.7;
 }
 
@@ -92,6 +93,9 @@ button:hover {
    flex-direction: column;
    gap: 20px;
    width: 200px;
+   background-color: rgba(255, 255, 255, 0.3);
+   padding: 20px;
+   border-radius: 10px;
 }
 
 #line-width {
@@ -119,6 +123,11 @@ button:hover {
 }
 
 input#color {
+   height: 50px;
+   background-color: #111;
+   border: 0;
+   /* border-radius: 5px; */
+   cursor: pointer;
 }
 
 input#text {
@@ -159,7 +168,7 @@ input#file {
 }
 
 #destroy-btn {
-   background-color: rgb(204, 71, 71);
+   background-color: rgb(214, 67, 104);
 }
 
 #eraser-btn {
@@ -167,7 +176,7 @@ input#file {
 }
 
 label {
-   background-color: rgb(69, 146, 88);
+   background-color: rgb(74, 89, 219);
 }
 
 #save {
@@ -180,7 +189,7 @@ label {
 }
 #fonts button {
    padding: 15px;
-   background-color: #efefef;
+   background-color: white;
    color: #333;
 }
 
@@ -189,5 +198,5 @@ label {
 }
 
 .mode-on {
-   opacity: 0.6;
+   opacity: 0.7;
 }

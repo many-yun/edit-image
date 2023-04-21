@@ -25,6 +25,9 @@ let isFilling = false;
 let imageWidth = 0;
 let imageHeight = 0;
 
+const image = new Image(); // === <img src='' />
+const canvasImage = new Image();
+
 let cropMode = false;
 
 let startX = 0;
@@ -67,10 +70,14 @@ function onPaintMode() {
 }
 
 function canvasDraw(cX, cY) {
+   ctx.fillStyle = 'grey';
+   ctx.beginPath();
    ctx.strokeStyle = 'red';
-   ctx.fillStyle = 'white';
    ctx.lineWidth = 2;
-   image ? ctx.drawImage(image, 0, 0, imageWidth, imageHeight) : ctx.drawImage(canvas, 0, 0, imageWidth, imageHeight);
+   ctx.drawImage(image, 0, 0, imageWidth, imageHeight);
+   // image.src !== ''
+   //    ? ctx.drawImage(image, 0, 0, imageWidth, imageHeight)
+   //    : ctx.drawImage(canvasImage, 0, 0, imageWidth, imageHeight);
    ctx.strokeRect(startX, startY, cX - startX, cY - startY);
 }
 
@@ -145,6 +152,8 @@ function onDestroyClick(e) {
    sY = 0;
    eX = 0;
    eY = 0;
+   ctx.lineCap = 'round';
+   image.src = '';
 }
 
 function onEreaserClick() {
@@ -152,8 +161,6 @@ function onEreaserClick() {
    ctx.strokeStyle = 'white';
    isFilling = false;
 }
-
-const image = new Image(); // === <img src='' />
 
 function onFileChange(e) {
    canvas.style.left = `0`;
@@ -221,12 +228,16 @@ function onSaveClick() {
    a.click();
 }
 
+let currentFont = 'S-CoreDream-3Light';
+
 function onImageCrop(e) {
    if (!cropMode) {
       cropMode = true;
       canvas.className += 'on';
       e.currentTarget.className += 'mode-on';
       cropBtn.innerHTML = '<i class="fa fa-solid fa-crop"></i> 자르기 완료';
+      const canvasUrl = canvas.toDataURL();
+      canvasImage.src = canvasUrl;
    } else {
       cropMode = false;
       canvas.classList.remove('on');
@@ -238,6 +249,7 @@ function onImageCrop(e) {
       canvas.style.left = `calc(50% - ${canvas.width / 2}px)`;
       canvas.style.top = `calc(400px - ${canvas.height / 2}px)`;
       ctx.putImageData(imageData, 0, 0);
+      ctx.font = `48px ${currentFont}`;
       ctx.strokeStyle = color.value;
       ctx.fillStyle = color.value;
       ctx.lineWidth = lineWidth.value;
@@ -247,8 +259,9 @@ function onImageCrop(e) {
 function onChangeFont(e) {
    fontBtn.forEach((font) => (font.style.backgroundColor = '#efefef'));
    fontBtn.forEach((font) => (font.style.color = '#333'));
-   ctx.font = `48px ${e.target.dataset.font}`;
-   e.target.style.backgroundColor = 'royalblue';
+   currentFont = e.target.dataset.font;
+   ctx.font = `48px ${currentFont}`;
+   e.target.style.backgroundColor = 'rgb(143, 96, 219)';
    e.target.style.color = 'white';
 }
 
