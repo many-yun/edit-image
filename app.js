@@ -43,6 +43,7 @@ ctx.font = '48px S-CoreDream-3Light';
 
 let degrees = 0;
 
+/** 그림그리기 */
 function onMove(e) {
    if (isPainting && !isFilling && !cropMode) {
       ctx.lineTo(e.offsetX, e.offsetY);
@@ -58,11 +59,13 @@ function onMove(e) {
    ctx.moveTo(e.offsetX, e.offsetY);
 }
 
+/** 브러쉬모드 */
 function onBrushMode() {
    ctx.beginPath();
    ctx.strokeStyle = color.value;
    isFilling = false;
 }
+/** 페인트모드 */
 function onPaintMode() {
    ctx.beginPath();
    ctx.fillStyle = color.value;
@@ -75,12 +78,10 @@ function canvasDraw(cX, cY) {
    ctx.strokeStyle = 'red';
    ctx.lineWidth = 2;
    ctx.drawImage(image, 0, 0, imageWidth, imageHeight);
-   // image.src !== ''
-   //    ? ctx.drawImage(image, 0, 0, imageWidth, imageHeight)
-   //    : ctx.drawImage(canvasImage, 0, 0, imageWidth, imageHeight);
    ctx.strokeRect(startX, startY, cX - startX, cY - startY);
 }
 
+/** 캔버스 클릭시 드로잉 or 페인트 */
 function onMouseDown(e) {
    if (!cropMode) {
       isPainting = true;
@@ -92,7 +93,7 @@ function onMouseDown(e) {
       isPainting = true;
    }
 }
-
+/** 마우스 up > 드로잉 끝 */
 function onMouseUp(e) {
    if (!cropMode) {
       isPainting = false;
@@ -102,23 +103,24 @@ function onMouseUp(e) {
       eY = e.offsetY;
    }
 }
-
+/** 화면 벗어날시 드로잉 끝 */
 function onMouseOut() {
    isPainting = false;
 }
 
+/** 선 굵기 변경 */
 function onLineWidthChange(e) {
    ctx.beginPath();
    ctx.lineWidth = e.target.value;
    lineWidthNum.innerText = e.target.value;
 }
-
+/** 색상변경 */
 function onColorChange(e) {
    ctx.beginPath();
    ctx.strokeStyle = e.target.value;
    ctx.fillStyle = e.target.value;
 }
-
+/** 팔레트 클릭하여 색상 변경 */
 function onColorClick(e) {
    ctx.beginPath();
    const colorValue = e.target.dataset.color;
@@ -126,13 +128,13 @@ function onColorClick(e) {
    ctx.fillStyle = colorValue;
    color.value = colorValue;
 }
-
+/** 페인트 모드시 캔버스 채워짐 */
 function onCanvasClick() {
    if (isFilling && !cropMode) {
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
    }
 }
-
+/** 초기화 모드 */
 function onDestroyClick(e) {
    image.remove();
    ctx.fillStyle = 'white';
@@ -155,13 +157,13 @@ function onDestroyClick(e) {
    ctx.lineCap = 'round';
    image.src = '';
 }
-
+/** 지우개 모드 */
 function onEreaserClick() {
    ctx.beginPath();
    ctx.strokeStyle = 'white';
    isFilling = false;
 }
-
+/** 로컬이미지 업로드 */
 function onFileChange(e) {
    canvas.style.left = `0`;
    canvas.style.top = `0`;
@@ -208,7 +210,7 @@ function onFileChange(e) {
       fileInput.value = null;
    };
 }
-
+/** 더블클릭하여 텍스트 추가 */
 function onDoubleClick(e) {
    if (textInput.value !== '') {
       ctx.save();
@@ -219,7 +221,7 @@ function onDoubleClick(e) {
       textInput.value = '';
    }
 }
-
+/** 이미지 저장 */
 function onSaveClick() {
    const url = canvas.toDataURL();
    const a = document.createElement('a');
@@ -230,32 +232,36 @@ function onSaveClick() {
 
 let currentFont = 'S-CoreDream-3Light';
 
+/** 이미지 크롭모드 */
 function onImageCrop(e) {
-   if (!cropMode) {
-      cropMode = true;
-      canvas.className += 'on';
-      e.currentTarget.className += 'mode-on';
-      cropBtn.innerHTML = '<i class="fa fa-solid fa-crop"></i> 자르기 완료';
-      const canvasUrl = canvas.toDataURL();
-      canvasImage.src = canvasUrl;
-   } else {
-      cropMode = false;
-      canvas.classList.remove('on');
-      e.currentTarget.classList.remove('mode-on');
-      cropBtn.innerHTML = '<i class="fa fa-solid fa-crop"></i> 자르기';
-      let imageData = ctx.getImageData(startX + 1, startY + 1, eX, eY);
-      canvas.width = eX - startX - 2;
-      canvas.height = eY - startY - 2;
-      canvas.style.left = `calc(50% - ${canvas.width / 2}px)`;
-      canvas.style.top = `calc(400px - ${canvas.height / 2}px)`;
-      ctx.putImageData(imageData, 0, 0);
-      ctx.font = `48px ${currentFont}`;
-      ctx.strokeStyle = color.value;
-      ctx.fillStyle = color.value;
-      ctx.lineWidth = lineWidth.value;
-   }
+   if (image.src !== '') {
+      if (!cropMode) {
+         cropMode = true;
+         canvas.className += 'on';
+         e.currentTarget.className += 'mode-on';
+         cropBtn.innerHTML = '<i class="fa fa-solid fa-crop"></i> 자르기 완료';
+         const canvasUrl = canvas.toDataURL();
+         canvasImage.src = canvasUrl;
+      } else {
+         cropMode = false;
+         canvas.classList.remove('on');
+         e.currentTarget.classList.remove('mode-on');
+         cropBtn.innerHTML = '<i class="fa fa-solid fa-crop"></i> 자르기';
+         let imageData = ctx.getImageData(startX + 1, startY + 1, eX, eY);
+         canvas.width = eX - startX - 2;
+         canvas.height = eY - startY - 2;
+         canvas.style.left = `calc(50% - ${canvas.width / 2}px)`;
+         canvas.style.top = `calc(400px - ${canvas.height / 2}px)`;
+         ctx.putImageData(imageData, 0, 0);
+         ctx.font = `48px ${currentFont}`;
+         ctx.strokeStyle = color.value;
+         ctx.fillStyle = color.value;
+         ctx.lineWidth = lineWidth.value;
+      }
+   } else alert('사진을 추가해주세요.');
 }
 
+/**폰트 변경 */
 function onChangeFont(e) {
    fontBtn.forEach((font) => (font.style.backgroundColor = '#efefef'));
    fontBtn.forEach((font) => (font.style.color = '#333'));
@@ -265,6 +271,7 @@ function onChangeFont(e) {
    e.target.style.color = 'white';
 }
 
+/** 각 모드 활성화시 class 추가 */
 function onToolMode(e) {
    toolBtns.forEach((toolBtn) => toolBtn.classList.remove('mode-on'));
    e.currentTarget.classList += ' mode-on';
